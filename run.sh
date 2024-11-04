@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "Running private-histogram app"
+set -e
 
-# Activate virtual environment and run the application
-uv venv --allow-existing
-uv pip install --upgrade syftbox
-uv run python main.py
+# this will create venv from python version defined in .python-version
+uv venv
+
+# install requirements for the project
+uv pip install -r requirements.txt
+
+# run app using python from venv
+uv run main.py
