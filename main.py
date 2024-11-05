@@ -7,13 +7,15 @@ import phe as paillier
 
 logger.add("app.log", level="DEBUG")  # Logs to a file with debug level
 
-PENDING_FILE_NAME = "data.json"
+PROCESSING_FILE_NAME = "data.json"
 
+
+######### HELPER FUNCTIONS #########
 def exit(message):
     logger.info(message)
     sys.exit(0)
 
-def setup_folders():
+def setup_private_folder():
     # permissions = SyftPermission(admin=[my_email], read=[my_email], write=[my_email])
     permissions = SyftPermission.mine_no_permission(my_email)
     folder_path = private_dir(client, my_email)
@@ -88,26 +90,28 @@ def decrypt_result(ring_data):
     
     write_json(public_dir(client, my_email) / "result.json", {"result": decrypted_sum})
     
+    
+######### MAIN LOGIC #########
 client = Client.load()
 my_email: str = client.email
 
 secrets_file = private_dir(client, my_email) / "secret.json"
-pending_file = public_dir(client, my_email) / PENDING_FILE_NAME
+processing_file = public_dir(client, my_email) / PROCESSING_FILE_NAME
 
-setup_folders() 
+setup_private_folder() 
 
 if not check_file_exists(secrets_file):
     logger.info(f"File {secrets_file} does not exist.")
     sys.exit(0)
 
-if not check_file_exists(pending_file):
-    logger.info(f"Computation isn't blocked on you, waiting for {pending_file} (unless you're the ring leader).")
+if not check_file_exists(processing_file):
+    logger.info(f"Computation isn't blocked on you, waiting for {processing_file} (unless you're the ring leader).")
     sys.exit(0)
 
-ring_data = load_json(pending_file)
+ring_data = load_json(processing_file)
 ring_participants = ring_data["participants"]
 next_member = next_participant(ring_participants)
-dest = public_dir(client, next_member) / PENDING_FILE_NAME
+dest = public_dir(client, next_member) / PROCESSING_FILE_NAME
 
 # First participant is ring leader
 if my_email == ring_participants[0]:
@@ -127,5 +131,5 @@ else:
     new_ring_data = create_ring_data(ring_data)
     write_json(dest, new_ring_data)
 
-pending_file.unlink()
-print(f"Done processing {pending_file}, removing it.")
+processing_file.unlink()
+print(f"Done processing {processing_file}, removing it.")
