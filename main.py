@@ -31,7 +31,7 @@ def setup_folder(client):
     folder_path = api_data_dir(client, my_email, APP_NAME)
     # public_dir(client, my_email) / APP_NAME
     permission = SyftPermission.mine_with_public_write(folder_path)
-    permission.read.apend("GLOBAL")
+    permission.read.append("GLOBAL")
     setup_folder_with_permissions(folder_path, permission)
    
 def adjacent_participant(ring_participants):
