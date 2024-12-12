@@ -125,12 +125,12 @@ ring_data = load_json(processing_file)
 ring_participants = ring_data["participants"]
 logger.info(f"Ring participants: {ring_participants}")
 next_member, previous_member = adjacent_participant(ring_participants)
-dest = public_dir(client, next_member) / APP_NAME / PROCESSING_FILE_NAME
+dest = api_data_dir(client, next_member, APP_NAME) / PROCESSING_FILE_NAME
 
 
 # First participant is ring leader
 if my_email == ring_participants[0]:
-    if check_file_exists(public_dir(client, my_email) / "result.json"):
+    if check_file_exists(api_data_dir(client, my_email, APP_NAME) / "result.json"):
         exit("Result already computed, exiting.")
     
     logger.info("Running as ring leader")
