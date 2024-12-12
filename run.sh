@@ -2,11 +2,17 @@
 
 set -e
 
-# this will create venv from python version defined in .python-version
-uv venv
+# 1. Create venv
+uv venv -p 3.12
 
-# install requirements for the project
+# 2. Activate venv
+. .venv/bin/activate
+
+# 3. Install dependencies
 uv pip install -r requirements.txt
 
-# run app using python from venv
-uv run main.py
+# 4. Run Python script
+python3 main.py
+
+# 5. Deactivate venv
+deactivate
