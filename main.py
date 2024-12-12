@@ -1,6 +1,14 @@
 import sys
 from syftbox.lib import Client
-from utils import public_dir, private_dir, load_json, check_file_exists, write_json, setup_folder_with_permissions
+from utils import (
+    public_dir, 
+    private_dir, 
+    load_json, 
+    check_file_exists, 
+    write_json, 
+    setup_folder_with_permissions, 
+    api_data_dir
+)
 from loguru import logger
 from syftbox.lib import SyftPermission
 import phe as paillier
@@ -20,8 +28,10 @@ def setup_folder(client):
     private_folder_path = private_dir(client)
     private_folder_path.mkdir(parents=True, exist_ok=True)
     
-    folder_path = public_dir(client, my_email) / APP_NAME
+    folder_path = api_data_dir(client, my_email, APP_NAME)
+    # public_dir(client, my_email) / APP_NAME
     permission = SyftPermission.mine_with_public_write(folder_path)
+    permission.read.apend("GLOBAL")
     setup_folder_with_permissions(folder_path, permission)
    
 def adjacent_participant(ring_participants):
@@ -92,15 +102,15 @@ def decrypt_result(ring_data):
     decrypted_sum = private_key.decrypt(encrypted_sum)
     logger.info(f"Decrypted sum: {decrypted_sum}")
     
-    write_json(public_dir(client, my_email) / "result.json", {"result": decrypted_sum})
+    write_json(api_data_dir(client, my_email, APP_NAME) / "ring-he-result.json", {"result": decrypted_sum})
     
     
 ######### MAIN LOGIC #########
 client = Client.load()
 my_email: str = client.email
 
-secrets_file = private_dir(client) / "secret.txt"
-processing_file = public_dir(client, my_email) / APP_NAME / PROCESSING_FILE_NAME
+secrets_file = private_dir(client) / "secret.json"
+processing_file = api_data_dir(client, my_email, APP_NAME) / PROCESSING_FILE_NAME
 setup_folder(client)
 
 if not check_file_exists(secrets_file):

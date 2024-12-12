@@ -20,10 +20,10 @@ https://github.com/user-attachments/assets/25e90f29-0324-4877-b99d-fa1560d6913f
 
 1. **Ring Leader Initialization**:
    - The **ring leader** generates a set of Paillier encryption keys.
-   - They encrypt their secret data (stored in `private/secret.txt`), start the rolling sum, and pass the data to the next member in the ring (file `public/data.json` in the next ring member's datasite).
+   - They encrypt their secret data (stored in `private/secret.json`), start the rolling sum, and pass the data to the next member in the ring (file `public/data.json` in the next ring member's datasite).
 
 2. **Ring Members**:
-   - Each member of the ring waits to receive the `public/data.json` file from the previous member.
+   - Each member of the ring waits to receive the `public/ring-he/data.json` file from the previous member.
    - When they receive the file, they encrypt their secret data (`private/secret.json`) and add it to the rolling sum.
    - They then pass the updated sum to the next member in the ring.
 
