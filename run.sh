@@ -3,7 +3,7 @@
 set -e
 
 # 1. Create venv
-uv venv -p 3.12
+uv venv -p 3.12 --allow-existing
 
 # 2. Activate venv
 . .venv/bin/activate

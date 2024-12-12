@@ -7,6 +7,7 @@ import phe as paillier
 
 logger.add("app.log", level="DEBUG")  # Logs to a file with debug level
 
+APP_NAME = "ring-he"
 PROCESSING_FILE_NAME = "data.json"
 
 
@@ -15,20 +16,23 @@ def exit(message):
     logger.info(message)
     sys.exit(0)
 
-def setup_private_folder():
-    # permissions = SyftPermission(admin=[my_email], read=[my_email], write=[my_email])
-    permissions = SyftPermission.mine_no_permission(my_email)
-    folder_path = private_dir(client, my_email)
-    setup_folder_with_permissions(folder_path, permissions)
+def setup_folder(client):
+    private_folder_path = private_dir(client)
+    private_folder_path.mkdir(parents=True, exist_ok=True)
+    
+    folder_path = public_dir(client, my_email) / APP_NAME
+    permission = SyftPermission.mine_with_public_write(folder_path)
+    setup_folder_with_permissions(folder_path, permission)
    
-def next_participant(ring_participants):
+def adjacent_participant(ring_participants):
     try:
         index = ring_participants.index(my_email)
     except ValueError:
         exit(f"user_id {my_email} not found in the ring.")
     
     next_index = (index + 1) % len(ring_participants)
-    return ring_participants[next_index]
+    prev_index = (index - 1) % len(ring_participants)
+    return ring_participants[next_index], ring_participants[prev_index]
 
 def encrypt_my_data(public_key_n):
     my_secret = load_json(secrets_file)["data"]
@@ -55,13 +59,13 @@ def setup_keys():
     """Generate Paillier keys and save them in the private directory."""
     public_key, private_key = paillier.generate_paillier_keypair()
 
-    private_key_path = private_dir(client, my_email) / "private_key.json"
-    public_key_path = private_dir(client, my_email) / "public_key.json"
+    private_key_path = private_dir(client) / "private_key.json"
+    public_key_path = private_dir(client) / "public_key.json"
 
     write_json(private_key_path, {"p": private_key.p, "q": private_key.q})
     write_json(public_key_path, {"n": public_key.n})
 
-    logger.info(f"Keys created and saved in {private_dir(client, my_email)}")
+    logger.info(f"Keys created and saved in {private_dir(client)}")
     return public_key.n
     
 def start_ring():
@@ -75,8 +79,8 @@ def start_ring():
     }
    
 def decrypt_result(ring_data):
-    private_key = load_json(private_dir(client, my_email) / "private_key.json")
-    public_key = load_json(private_dir(client, my_email) / "public_key.json")
+    private_key = load_json(private_dir(client) / "private_key.json")
+    public_key = load_json(private_dir(client) / "public_key.json")
     private_key = paillier.PaillierPrivateKey(
                 public_key=paillier.PaillierPublicKey(n=public_key["n"]), 
                 p=int(private_key["p"]), 
@@ -95,10 +99,9 @@ def decrypt_result(ring_data):
 client = Client.load()
 my_email: str = client.email
 
-secrets_file = private_dir(client, my_email) / "secret.json"
-processing_file = public_dir(client, my_email) / PROCESSING_FILE_NAME
-
-setup_private_folder() 
+secrets_file = private_dir(client) / "secret.txt"
+processing_file = public_dir(client, my_email) / APP_NAME / PROCESSING_FILE_NAME
+setup_folder(client)
 
 if not check_file_exists(secrets_file):
     logger.info(f"File {secrets_file} does not exist.")
@@ -110,8 +113,10 @@ if not check_file_exists(processing_file):
 
 ring_data = load_json(processing_file)
 ring_participants = ring_data["participants"]
-next_member = next_participant(ring_participants)
-dest = public_dir(client, next_member) / PROCESSING_FILE_NAME
+logger.info(f"Ring participants: {ring_participants}")
+next_member, previous_member = adjacent_participant(ring_participants)
+dest = public_dir(client, next_member) / APP_NAME / PROCESSING_FILE_NAME
+
 
 # First participant is ring leader
 if my_email == ring_participants[0]:
@@ -123,6 +128,7 @@ if my_email == ring_participants[0]:
         logger.info("No data to compute, starting the ring.")
         initial_ring_data = start_ring()
         write_json(dest, initial_ring_data)
+        logger.info("Ring initialized.")
     else:
         logger.info("Computation has completed, decrypting the result.")
         decrypt_result(ring_data)
