@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/25e90f29-0324-4877-b99d-fa1560d6913f
 ```plaintext
 .
 ├── private/                    # Directory for storing private keys and secret data
-│   └── my_secret.txt           # File containing the user's secret data
+│   └── secret.txt           # File containing the user's secret data
 │   └── *_key.json              # Leader will have the keys here
 └── public/                     
     └── result.json             # Leader will publish this file containing the sum of all users 
