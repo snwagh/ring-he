@@ -20,9 +20,9 @@ def private_dir(client):
 def api_data_dir(client, user_id, app_name):
     return client.api_data(app_name, user_id)
 
-def setup_folder_with_permissions(folder_path, permission: SyftPermission):
-    folder_path.mkdir(parents=True, exist_ok=True)
-    permission.save(folder_path / PERM_FILE)
+# def setup_folder_with_permissions(folder_path, permission: SyftPermission):
+#     folder_path.mkdir(parents=True, exist_ok=True)
+#     permission.save(folder_path / PERM_FILE)
     
 def write_json(file_path: Path, result: dict) -> None:
     print(f"Writing to {file_path}.")

@@ -1,12 +1,10 @@
 import sys
 from syftbox.lib import Client
 from utils import (
-    public_dir,
     private_dir,
     load_json,
     check_file_exists,
     write_json,
-    setup_folder_with_permissions,
     api_data_dir,
 )
 from loguru import logger
@@ -33,10 +31,10 @@ def setup_folder(client):
     private_folder_path.mkdir(parents=True, exist_ok=True)
 
     folder_path = api_data_dir(client, my_email, APP_NAME)
-    permission = SyftPermission.mine_with_public_write(folder_path)
-    permission.read.append("GLOBAL")
-    setup_folder_with_permissions(folder_path, permission)
-
+    folder_path.mkdir(parents=True, exist_ok=True)
+    permission = SyftPermission.mine_with_public_write(client.email)
+    permission.ensure(folder_path)
+    
 
 def adjacent_participant(ring_participants):
     try:
