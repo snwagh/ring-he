@@ -55,7 +55,7 @@ Note that this does not address all the challenges with secure aggregation (such
 ```plaintext
 .
 ├── private/                    # Directory for storing private keys and secret data
-│   └── secret.txt              # File containing the user's secret data
+│   └── secret.json             # File containing the user's secret data
 │   └── *_key.json              # Leader will have the keys here
 └── datasites/<email_id>/api_data/ring-he/
     └── ring-he-result.json     # Leader will publish this file containing the sum of all users 
